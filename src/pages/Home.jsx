@@ -6,7 +6,7 @@ const PATHS = [
     to: '/developer',
     icon: TrendingUp,
     title: 'I Develop Solar',
-    desc: 'Full project underwriting — IRR, NPV, LCOE, sensitivity analysis. Powered by real NREL solar data.',
+    desc: 'Model project IRR, NPV, LCOE, and sensitivity across a 25-year cashflow horizon.',
     badge: 'For developers',
   },
   {
@@ -19,9 +19,9 @@ const PATHS = [
 ]
 
 const FEATURES = [
-  { icon: Database, title: 'Real NREL Solar Data', desc: 'PVWatts v8 capacity factors and irradiance — not latitude guesswork.' },
-  { icon: BarChart2, title: 'Live Utility Rates', desc: 'NREL Utility Rate Database pulls actual commercial rates for your location.' },
-  { icon: Shield, title: 'Full Financial Model', desc: 'IRR, NPV, LCOE, DSCR, MACRS depreciation, ITC — a real underwriting model.' },
+  { icon: Database, title: 'NREL Solar Data', desc: 'PVWatts v8 capacity factors and irradiance pulled directly for your project location.' },
+  { icon: BarChart2, title: 'Local Utility Rates', desc: 'Commercial and industrial electricity rates from the NREL Utility Rate Database.' },
+  { icon: Shield, title: 'Project Financial Model', desc: 'IRR, NPV, LCOE, DSCR, MACRS depreciation, and ITC modeled over a 25-year horizon.' },
 ]
 
 export default function Home() {
@@ -38,7 +38,7 @@ export default function Home() {
           <span className="text-solar-400">Grounded in Real Data</span>
         </h1>
         <p className="text-gray-400 text-lg max-w-xl mx-auto">
-          Screen sites and model project economics using live solar irradiance and utility rate data — not hard-coded assumptions.
+          Screen sites and model project economics using solar irradiance and utility rate data pulled for your specific location.
         </p>
       </div>
 
@@ -74,7 +74,7 @@ export default function Home() {
 
       {/* Feature strip */}
       <div className="border-t border-border pt-12">
-        <p className="text-xs uppercase tracking-widest text-gray-600 text-center mb-8">What makes this different</p>
+        <p className="text-xs uppercase tracking-widest text-gray-600 text-center mb-8">How it works</p>
         <div className="grid sm:grid-cols-3 gap-6">
           {FEATURES.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="text-center">
