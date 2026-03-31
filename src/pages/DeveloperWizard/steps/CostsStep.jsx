@@ -1,39 +1,21 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Pencil } from 'lucide-react'
 import { fmtCurrency } from '../../../utils/formatters'
 
-// Regional EPC cost benchmarks ($/W-DC, 2024, ground-mount utility-scale)
-const REGIONAL_EPC = {
-  Northeast:  { low: 1.05, mid: 1.20, high: 1.40 },
-  Southeast:  { low: 0.90, mid: 1.05, high: 1.20 },
-  Midwest:    { low: 0.92, mid: 1.08, high: 1.25 },
-  Southwest:  { low: 0.85, mid: 1.00, high: 1.15 },
-  West:       { low: 0.95, mid: 1.10, high: 1.30 },
-}
-
-// EPC cost breakdown as % of total (approximate industry split)
 const EPC_BREAKDOWN = [
-  { label: 'Solar modules',        pct: 0.28 },
-  { label: 'Inverters',            pct: 0.08 },
-  { label: 'Racking & mounting',   pct: 0.10 },
-  { label: 'Balance of system',    pct: 0.12 },
-  { label: 'Labor & installation', pct: 0.22 },
-  { label: 'Engineering & PM',     pct: 0.08 },
+  { label: 'Solar modules',                  pct: 0.28 },
+  { label: 'Inverters',                      pct: 0.08 },
+  { label: 'Racking & mounting',             pct: 0.10 },
+  { label: 'Balance of system',              pct: 0.12 },
+  { label: 'Labor & installation',           pct: 0.22 },
+  { label: 'Engineering & PM',               pct: 0.08 },
   { label: 'Permitting & interconnect prep', pct: 0.06 },
-  { label: 'Contingency (5%)',     pct: 0.06 },
-]
-
-// Grid connection cost ranges by distance and voltage
-const GRID_COST_GUIDE = [
-  { label: '< 0.5 miles, distribution tap',  low: 50000,  high: 150000,  perMW: true },
-  { label: '0.5–2 miles, distribution extension', low: 100000, high: 300000, perMW: true },
-  { label: '2–5 miles, distribution upgrade',  low: 200000, high: 600000, perMW: true },
-  { label: '> 5 miles or transmission-level',  low: 500000, high: 2000000, perMW: true },
+  { label: 'Contingency (5%)',               pct: 0.06 },
 ]
 
 export default function CostsStep({ data, update }) {
   const [showBreakdown, setShowBreakdown] = useState(false)
-  const [showGridGuide, setShowGridGuide] = useState(false)
+  const [overrideGrid, setOverrideGrid] = useState(false)
 
   const systemMW = data.usableAcres / data.acresPerMW
   const systemKW = systemMW * 1000
@@ -70,13 +52,18 @@ export default function CostsStep({ data, update }) {
 
         {showBreakdown && (
           <div className="mt-3 card-elevated p-4 space-y-2">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Estimated cost breakdown at ${data.epcCostPerW}/W</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">
+              Estimated cost breakdown at ${data.epcCostPerW}/W
+            </p>
             {EPC_BREAKDOWN.map(({ label, pct }) => (
               <div key={label} className="flex items-center justify-between text-xs">
                 <span className="text-gray-400">{label}</span>
                 <div className="flex items-center gap-3">
                   <div className="w-20 h-1.5 bg-bg-surface rounded-full overflow-hidden">
-                    <div className="h-full bg-solar-500/60 rounded-full" style={{ width: `${pct * 100 / 0.28}%` }} />
+                    <div
+                      className="h-full bg-solar-500/60 rounded-full"
+                      style={{ width: `${(pct / 0.28) * 100}%` }}
+                    />
                   </div>
                   <span className="font-mono text-gray-300 w-20 text-right">
                     {fmtCurrency(systemKW * data.epcCostPerW * pct)}
@@ -100,7 +87,7 @@ export default function CostsStep({ data, update }) {
             onChange={e => update({ omCostPerKWYr: parseFloat(e.target.value) || 0 })}
           />
           <p className="text-xs text-gray-600 mt-1">
-            Vegetation: $4–6 · Monitoring: $2–3 · Maintenance: $5–8 · Insurance: $3–5 · Total typical: $14–22/kW/yr
+            Vegetation $4–6 · Monitoring $2–3 · Maintenance $5–8 · Insurance $3–5 · Typical total: $14–22/kW/yr
           </p>
         </div>
         <div>
@@ -115,36 +102,36 @@ export default function CostsStep({ data, update }) {
         </div>
       </div>
 
-      {/* Grid connection */}
+      {/* Grid connection — derived from Step 1, overridable */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="label mb-0">Grid Connection Cost ($/MW)</label>
+          <label className="label mb-0">Grid Connection Cost</label>
           <button
-            onClick={() => setShowGridGuide(v => !v)}
-            className="text-xs text-solar-400 hover:text-solar-300 flex items-center gap-1"
+            onClick={() => setOverrideGrid(v => !v)}
+            className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1"
           >
-            Cost guide {showGridGuide ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            <Pencil size={11} /> {overrideGrid ? 'Use estimate' : 'Override'}
           </button>
         </div>
-        <input
-          type="number"
-          className="input-base"
-          min={0} step={10000}
-          value={data.gridConnectionCostPerMW}
-          onChange={e => update({ gridConnectionCostPerMW: parseFloat(e.target.value) || 0 })}
-        />
-        {showGridGuide && (
-          <div className="mt-3 card-elevated p-4 space-y-2">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Interconnection cost reference ranges</p>
-            {GRID_COST_GUIDE.map(({ label, low, high }) => (
-              <div key={label} className="flex items-center justify-between text-xs">
-                <span className="text-gray-400">{label}</span>
-                <span className="font-mono text-gray-300">{fmtCurrency(low)}–{fmtCurrency(high)}/MW</span>
-              </div>
-            ))}
-            <p className="text-xs text-gray-600 mt-2 pt-2 border-t border-border/50">
-              Costs include line extension, transformer upgrades, protection equipment, and utility study fees. Highly site-specific — confirm with utility.
-            </p>
+        {overrideGrid ? (
+          <div>
+            <input
+              type="number"
+              className="input-base"
+              min={0} step={10000}
+              value={data.gridConnectionCostPerMW}
+              onChange={e => update({ gridConnectionCostPerMW: parseFloat(e.target.value) || 0 })}
+            />
+            <p className="text-xs text-gray-600 mt-1">$/MW — overriding the estimate from your grid distance in Step 1</p>
+          </div>
+        ) : (
+          <div className="card-elevated p-3 flex items-center justify-between">
+            <span className="text-xs text-gray-500">
+              Estimated from {data.gridDistanceMiles || 0} mi grid distance (set in Step 1)
+            </span>
+            <span className="font-mono text-sm text-gray-200">
+              {fmtCurrency(gridCost)} total · ${(data.gridConnectionCostPerMW || 0).toLocaleString()}/MW
+            </span>
           </div>
         )}
       </div>
@@ -189,7 +176,7 @@ export default function CostsStep({ data, update }) {
           </div>
           {gridCost > 0 && (
             <div className="flex justify-between text-gray-400">
-              <span>Grid connection</span>
+              <span>Grid connection ({data.gridDistanceMiles || 0} mi)</span>
               <span className="font-mono text-gray-200">{fmtCurrency(gridCost)}</span>
             </div>
           )}
