@@ -1,8 +1,5 @@
 {
   "rewrites": [
     { "source": "/((?!api).*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "NREL_API_KEY": "@nrel-api-key"
-  }
+  ]
 }
